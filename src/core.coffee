@@ -15,16 +15,18 @@
 # Author:
 #   Michael Ansel <mansel@box.com>
 
+minimatch = require 'minimatch'
 
 module.exports = (robot) ->
   # Only initialize once
   return if robot.rbac?
 
-  robot.rbac = {}
+  robot.rbac = rbac = {}
 
   # baseNamespace - optional namespace for all permissions and operations
-  # permissions - Object mapping Permissions to arrays of Operations
-  robot.rbac.addPermissions = (baseNamespace, permissions) ->
+  # permissions - Object mapping Permissions to arrays of OperationPatterns
+  # OperationPattern is a glob pattern that matches one or more Operations
+  rbac.addPermissions = (baseNamespace, permissions) ->
     if not permissions?
       permissions = baseNamespace
       baseNamespace = undefined
@@ -41,35 +43,35 @@ module.exports = (robot) ->
     # Then, add to the global permission set
     Object.keys(permissions).forEach (permission) ->
       fullPermissionName = prefix + permission
-      operations = permissions[permission].map (operation) ->
-        prefix + operation
-      addPermission(fullPermissionName, operations)
+      permissions[permission].forEach (operation) ->
+        addPermissionToOperation(fullPermissionName, prefix + operation)
 
-  # map of permissions to an array of operations
-  robot.rbac.allPermissions = {}
   # map of operations to an array of permissions
-  robot.rbac.allOperations = {}
-
-  # replaces existing operation list for the permission
-  addPermission = (permission, operations) ->
-    # not sure if this forward mapping is ever even needed, might only need the reverse mapping
-    robot.rbac.allPermissions[permission] = operations
-    operations.forEach (operation) ->
-      addPermissionToOperation(permission, operation)
+  rbac.allOperations = {}
 
   # adds permission to list of permissions allowing a certain operation
   addPermissionToOperation = (permission, operation) ->
-    if !robot.rbac.allOperations.hasOwnProperty operation
-      robot.rbac.allOperations[operation] = []
-    robot.rbac.allOperations[operation].push permission
+    if !rbac.allOperations.hasOwnProperty operation
+      rbac.allOperations[operation] = []
+    rbac.allOperations[operation].push permission
+
+  # expand all operation globs and get the list of permissions for an operation
+  rbac.getPermissionsForOperation = (operation) ->
+    permissions = []
+    # Find all entries that match and collect permissions
+    Object.keys(rbac.allOperations).forEach (opPattern) ->
+      if minimatch(operation, opPattern)
+        # Add all permissions for opPattern to the list
+        Array.prototype.push.apply(permissions, rbac.allOperations[opPattern])
+    permissions
 
   # Default; should be overridden
-  robot.rbac.userHasPermission = (user, permission) ->
-    defaultPolicy = robot.rbac.allowUnknown
+  rbac.userHasPermission = (user, permission) ->
+    defaultPolicy = rbac.allowUnknown
     defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
     console.log("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
     return defaultPolicy
 
   # Default to the more secure option
   defaultPolicy = process.env.HUBOT_RBAC_DEFAULT_POLICY or 'deny'
-  robot.rbac.allowUnknown = (defaultPolicy == 'allow')
+  rbac.allowUnknown = (defaultPolicy == 'allow')

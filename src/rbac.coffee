@@ -19,7 +19,7 @@ module.exports = (robot) ->
 
   robot.addListenerMiddleware (robot, listener, response, next, done) ->
     operation = listener.options.id
-    permissions = robot.rbac.allOperations[operation] or []
+    permissions = robot.rbac.getPermissionsForOperation(operation)
 
     response.reply "Permissions allowing Operation (#{operation}): #{permissions}"
     response.reply "Checking permissions for #{response.message.user.id}"
