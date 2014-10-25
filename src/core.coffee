@@ -66,11 +66,11 @@ module.exports = (robot) ->
     permissions
 
   # Default; should be overridden
-  rbac.userHasPermission = (user, permission) ->
+  rbac.isUserAuthorized = (user, permission, response, cb) ->
     defaultPolicy = rbac.allowUnknown
     defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
-    console.log("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
-    return defaultPolicy
+    response.reply("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
+    cb defaultPolicy
 
   # Default to the more secure option
   defaultPolicy = process.env.HUBOT_RBAC_DEFAULT_POLICY or 'deny'

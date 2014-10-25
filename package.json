@@ -23,6 +23,7 @@
     "url": "https://github.com/michaelansel/hubot-rbac/issues"
   },
   "dependencies": {
+    "async": ">=0.1.0 <1.0.0",
     "minimatch": "1.x"
   },
   "peerDependencies": {
