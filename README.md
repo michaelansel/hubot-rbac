@@ -24,6 +24,7 @@ Then add **hubot-rbac** to your `external-scripts.json`:
   - permission-operation mapping provided by scripts
 - user-operation mapping in the brain?
   - this is what hubot-auth does right now
+    - false: hubot-auth has groups between users and operations
 - user-permission mapping stored in a script file
   - additional permission-operation mappings could be in script file
 - group-permission mapping stored in a script file, user-group mapping in LDAP
