@@ -22,12 +22,28 @@ module.exports = (robot) ->
 
   robot.rbac = {}
 
+  # baseNamespace - optional namespace for all permissions and operations
+  # permissions - Object mapping Permissions to arrays of Operations
   robot.rbac.addPermissions = (baseNamespace, permissions) ->
-    Object.keys(permissions).forEach (k) ->
-      permissionName = baseNamespace + '.' + k
-      operations = permissions[k].map (operation) ->
-        baseNamespace + '.' + operation
-      addPermission(permissionName, operations)
+    if not permissions?
+      permissions = baseNamespace
+      baseNamespace = undefined
+
+    if not (permissions is Object(permissions))
+      throw new Error("Need an object of Permission to Operation mappings")
+
+    if baseNamespace?
+      prefix = baseNamespace + '.'
+    else
+      prefix = ''
+
+    # Prefix permission name and all operation names
+    # Then, add to the global permission set
+    Object.keys(permissions).forEach (permission) ->
+      fullPermissionName = prefix + permission
+      operations = permissions[permission].map (operation) ->
+        prefix + operation
+      addPermission(fullPermissionName, operations)
 
   # map of permissions to an array of operations
   robot.rbac.allPermissions = {}
