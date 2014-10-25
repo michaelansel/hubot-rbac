@@ -1,7 +1,13 @@
-Path = require('path')
+fs = require 'fs'
+path = require 'path'
 
-module.exports = (robot) ->
-  path = Path.resolve __dirname, 'src'
-
-  robot.loadFile path, 'rbac.coffee'
-  robot.parseHelp Path.join(path, 'rbac.coffee')
+module.exports = (robot, scripts) ->
+  scripts = ['rbac.coffee'] if not scripts?
+  scriptsPath = path.resolve(__dirname, 'src')
+  fs.exists scriptsPath, (exists) ->
+    if exists
+      for script in fs.readdirSync(scriptsPath)
+        if scripts? and '*' not in scripts
+          robot.loadFile(scriptsPath, script) if script in scripts
+        else
+          robot.loadFile(scriptsPath, script)

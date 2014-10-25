@@ -1,22 +1,40 @@
 {
   "name": "hubot-rbac",
   "version": "0.0.0",
-  "description": "RBAC framework for hubot",
-  "main": "index.js",
+  "description": "RBAC authorization framework for hubot",
+  "main": "index.coffee",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/michaelansel/hubot-rbac.git"
+    "url": "git://github.com/michaelansel/hubot-rbac.git"
   },
   "keywords": [
     "hubot",
-    "rbac"
+    "hubot-scripts",
+    "rbac",
+    "auth",
+    "authorization"
   ],
-  "author": "Michael Ansel",
+  "author": "Michael Ansel <mansel@box.com>",
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/michaelansel/hubot-rbac/issues"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "hubot": "2.x"
+  },
+  "devDependencies": {
+    "hubot": "2.x",
+    "mocha": "*",
+    "chai": "*",
+    "sinon-chai": "*",
+    "sinon": "*",
+    "grunt-mocha-test": "~0.7.0",
+    "grunt-release": "~0.6.0",
+    "matchdep": "~0.1.2",
+    "grunt-contrib-watch": "~0.5.3"
   }
 }

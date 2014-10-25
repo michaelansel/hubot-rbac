@@ -1,3 +1,18 @@
+# Description
+#   RBAC authorization framework for hubot
+#
+# Configuration:
+#   HUBOT_RBAC_DEFAULT_POLICY - [allow|deny] - Behavior when there is no defined policy for a given listener
+#
+# Commands:
+#
+#
+# Notes:
+#   <optional notes required for the script>
+#
+# Author:
+#   Michael Ansel <mansel@box.com>
+
 module.exports = (robot) ->
   require('hubot-rbac/src/core')(robot)
 
