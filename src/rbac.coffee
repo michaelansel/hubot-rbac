@@ -8,7 +8,8 @@
 #
 #
 # Notes:
-#   <optional notes required for the script>
+#   Installs basic middleware for enforcing authorization policy. Expects
+#   that robot.rbac.userHasPermission is overridden. Depends on core.coffee.
 #
 # Author:
 #   Michael Ansel <mansel@box.com>

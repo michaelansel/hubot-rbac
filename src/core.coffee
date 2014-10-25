@@ -1,7 +1,20 @@
-{Listener} = require 'hubot/src/listener'
+# Description
+#   Core RBAC functionality usable by all scripts
+#
+# Configuration:
+#   HUBOT_RBAC_DEFAULT_POLICY - [allow|deny] - Behavior when there is no defined policy for a given listener
+#
+# Commands:
+#
+#
+# Notes:
+#   Primarily provides robot.rbac.addPermissions so scripts can define their
+#   own Permission to Operation mapping. Does NOT set up any commands or
+#   install middleware.
+#
+# Author:
+#   Michael Ansel <mansel@box.com>
 
-# This defines core functionality needed by other scripts (but doesn't
-# turn on RBAC for hubot).
 
 module.exports = (robot) ->
   # Only initialize once
