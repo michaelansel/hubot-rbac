@@ -36,6 +36,7 @@ module.exports = (robot) ->
       async.some(permissions,
        (permission, cb) ->
          robot.rbac.isUserAuthorized(
+           # TODO Probably want the full user object here
            response.message.user.id, permission, response, cb
          )
        (allowed) ->

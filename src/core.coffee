@@ -15,6 +15,7 @@
 # Author:
 #   Michael Ansel <mansel@box.com>
 
+async = require 'async'
 minimatch = require 'minimatch'
 
 module.exports = (robot) ->
@@ -22,6 +23,12 @@ module.exports = (robot) ->
   return if robot.rbac?
 
   robot.rbac = rbac = {}
+
+  # map of operations to an array of permissions
+  rbac.allOperations = {}
+
+  # array of permission check functions
+  rbac.permissionChecks = []
 
   # baseNamespace - optional namespace for all permissions and operations
   # permissions - Object mapping Permissions to arrays of OperationPatterns
@@ -46,9 +53,6 @@ module.exports = (robot) ->
       permissions[permission].forEach (operation) ->
         addPermissionToOperation(fullPermissionName, prefix + operation)
 
-  # map of operations to an array of permissions
-  rbac.allOperations = {}
-
   # adds permission to list of permissions allowing a certain operation
   addPermissionToOperation = (permission, operation) ->
     if !rbac.allOperations.hasOwnProperty operation
@@ -65,12 +69,25 @@ module.exports = (robot) ->
         Array.prototype.push.apply(permissions, rbac.allOperations[opPattern])
     permissions
 
-  # Default; should be overridden
+  # TODO documentation
+  # called like this: fn.call(undefined, user, permission, response, cb)
+  rbac.addPermissionCheck = (cb) ->
+    rbac.permissionChecks.push cb
+
+  # TODO Probably want the full user object here
   rbac.isUserAuthorized = (user, permission, response, cb) ->
-    defaultPolicy = rbac.allowUnknown
-    defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
-    response.reply("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
-    cb defaultPolicy
+    if rbac.permissionChecks.length > 0
+      # note that these execute in parallel
+      async.every(
+        rbac.permissionChecks
+        (fn, cb) -> fn.call(undefined, user, permission, response, cb)
+        cb
+      )
+    else
+      defaultPolicy = rbac.allowUnknown
+      defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
+      response.reply("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
+      cb defaultPolicy
 
   # Default to the more secure option
   defaultPolicy = process.env.HUBOT_RBAC_DEFAULT_POLICY or 'deny'
