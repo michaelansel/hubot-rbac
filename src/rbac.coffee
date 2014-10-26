@@ -17,17 +17,17 @@
 async = require 'async'
 
 module.exports = (robot) ->
-  require('hubot-rbac/src/core')(robot)
+  RBAC = require('hubot-rbac/src/core')(robot)
 
   robot.addListenerMiddleware (robot, listener, response, next, done) ->
     operation = listener.options.id
-    permissions = robot.rbac.getPermissionsForOperation(operation)
+    permissions = RBAC.getPermissionsForOperation(operation)
 
     response.reply "Permissions allowing Operation (#{operation}): #{permissions}"
     response.reply "Checking permissions for #{response.message.user.id}"
 
     if permissions.length == 0
-      defaultPolicy = robot.rbac.allowUnknown
+      defaultPolicy = RBAC.allowUnknown
       defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
       response.reply "No Permissions for Operation (#{operation}); using default policy (#{defaultPolicyWord})"
       finish defaultPolicy, response, next, done
@@ -35,7 +35,7 @@ module.exports = (robot) ->
       # Check for any authorized permissions
       async.some(permissions,
        (permission, cb) ->
-         robot.rbac.isUserAuthorized(
+         RBAC.isUserAuthorized(
            # TODO Probably want the full user object here
            response.message.user.id, permission, response, cb
          )

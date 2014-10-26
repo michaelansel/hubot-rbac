@@ -20,20 +20,21 @@ minimatch = require 'minimatch'
 
 module.exports = (robot) ->
   # Only initialize once
-  return if robot.rbac?
+  return robot.rbac if robot.rbac?
 
-  robot.rbac = rbac = {}
+  robot.rbac = RBAC = {}
 
   # map of operations to an array of permissions
-  rbac.allOperations = {}
+  allOperations = {}
 
   # array of permission check functions
-  rbac.permissionChecks = []
+  permissionChecks = []
 
+  # TODO documentation
   # baseNamespace - optional namespace for all permissions and operations
   # permissions - Object mapping Permissions to arrays of OperationPatterns
   # OperationPattern is a glob pattern that matches one or more Operations
-  rbac.addPermissions = (baseNamespace, permissions) ->
+  RBAC.addPermissions = (baseNamespace, permissions) ->
     if not permissions?
       permissions = baseNamespace
       baseNamespace = undefined
@@ -55,40 +56,44 @@ module.exports = (robot) ->
 
   # adds permission to list of permissions allowing a certain operation
   addPermissionToOperation = (permission, operation) ->
-    if !rbac.allOperations.hasOwnProperty operation
-      rbac.allOperations[operation] = []
-    rbac.allOperations[operation].push permission
+    if !allOperations.hasOwnProperty operation
+      allOperations[operation] = []
+    allOperations[operation].push permission
 
+  # TODO documentation
   # expand all operation globs and get the list of permissions for an operation
-  rbac.getPermissionsForOperation = (operation) ->
+  RBAC.getPermissionsForOperation = (operation) ->
     permissions = []
     # Find all entries that match and collect permissions
-    Object.keys(rbac.allOperations).forEach (opPattern) ->
+    Object.keys(allOperations).forEach (opPattern) ->
       if minimatch(operation, opPattern)
         # Add all permissions for opPattern to the list
-        Array.prototype.push.apply(permissions, rbac.allOperations[opPattern])
+        Array.prototype.push.apply(permissions, allOperations[opPattern])
     permissions
 
   # TODO documentation
   # called like this: fn.call(undefined, user, permission, response, cb)
-  rbac.addPermissionCheck = (cb) ->
-    rbac.permissionChecks.push cb
+  RBAC.addPermissionCheck = (cb) ->
+    permissionChecks.push cb
 
   # TODO Probably want the full user object here
-  rbac.isUserAuthorized = (user, permission, response, cb) ->
-    if rbac.permissionChecks.length > 0
+  RBAC.isUserAuthorized = (user, permission, response, cb) ->
+    if permissionChecks.length > 0
       # note that these execute in parallel
       async.every(
-        rbac.permissionChecks
+        permissionChecks
         (fn, cb) -> fn.call(undefined, user, permission, response, cb)
         cb
       )
     else
-      defaultPolicy = rbac.allowUnknown
+      defaultPolicy = RBAC.allowUnknown
       defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
       response.reply("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
       cb defaultPolicy
 
   # Default to the more secure option
   defaultPolicy = process.env.HUBOT_RBAC_DEFAULT_POLICY or 'deny'
-  rbac.allowUnknown = (defaultPolicy == 'allow')
+  RBAC.allowUnknown = (defaultPolicy == 'allow')
+
+  # Always return the RBAC object
+  return RBAC
