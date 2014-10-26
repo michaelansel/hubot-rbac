@@ -56,6 +56,9 @@ Then add **hubot-rbac** to your `external-scripts.json`:
 ## Questions
 - should there be an explicit distinction between Permissions and Operations?
   - should you be able to tie a user directly to an Operation?
+- what happens if there are multiple routes to a single operation?
+- what kind of messaging should be shown?
+- should we support OR conditions between mechanisms? (e.g. either in the local list OR LDAP)
 
 ## Internal architecture
 - basically a miniature rolesdb w/ callbacks for constraint checking
