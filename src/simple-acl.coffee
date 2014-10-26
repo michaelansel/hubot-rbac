@@ -2,7 +2,7 @@ async = require 'async'
 minimatch = require 'minimatch'
 
 module.exports = (robot) ->
-  RBAC = require('hubot-rbac/src/core')(robot)
+  RBAC = require('./core')(robot)
 
   SimpleACL = {}
 

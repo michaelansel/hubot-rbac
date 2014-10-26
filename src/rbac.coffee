@@ -17,7 +17,7 @@
 async = require 'async'
 
 module.exports = (robot) ->
-  RBAC = require('hubot-rbac/src/core')(robot)
+  RBAC = require('./core')(robot)
 
   robot.addListenerMiddleware (robot, listener, response, next, done) ->
     operation = listener.options.id

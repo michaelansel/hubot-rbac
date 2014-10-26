@@ -1,7 +1,7 @@
 async = require 'async'
 
 module.exports = (robot) ->
-  RBAC = require('hubot-rbac/src/core')(robot)
+  RBAC = require('./core')(robot)
 
   UserConstraints = {}
 
