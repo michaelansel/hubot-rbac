@@ -20,7 +20,11 @@ module.exports = (robot) ->
   RBAC = require('./core')(robot)
 
   robot.listenerMiddleware (robot, listener, response, next, done) ->
-    operation = listener.options.id
+    if listener.options?.id?
+      operation = listener.options.id
+    else
+      operation = 'unknown'
+
     # Execute subcommand ID generators
     if listener.options?.rbac?.subcommand?.call?
       operation = listener.options.rbac.subcommand.call(listener, response)
