@@ -19,7 +19,7 @@ async = require 'async'
 module.exports = (robot) ->
   RBAC = require('./core')(robot)
 
-  robot.addListenerMiddleware (robot, listener, response, next, done) ->
+  robot.listenerMiddleware (robot, listener, response, next, done) ->
     operation = listener.options.id
     permissions = RBAC.getPermissionsForOperation(operation)
 
