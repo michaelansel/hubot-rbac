@@ -21,6 +21,10 @@ module.exports = (robot) ->
 
   robot.listenerMiddleware (robot, listener, response, next, done) ->
     operation = listener.options.id
+    # Execute subcommand ID generators
+    if listener.options?.rbac?.subcommand?.call?
+      operation = listener.options.rbac.subcommand.call(listener, response)
+
     permissions = RBAC.getPermissionsForOperation(operation)
 
     response.reply "Permissions allowing Operation (#{operation}): #{permissions}"
@@ -33,15 +37,8 @@ module.exports = (robot) ->
       finish defaultPolicy, response, next, done
     else
       # Check for any authorized permissions
-      async.some(permissions,
-       (permission, cb) ->
-         RBAC.isUserAuthorized(
-           # TODO Probably want the full user object here
-           response.message.user.id, permission, response, cb
-         )
-       (allowed) ->
-         finish allowed, response, next, done
-      )
+      RBAC.checkPermissions response, permissions, (allowed) ->
+        finish allowed, response, next, done
 
   finish = (allowed, response, next, done) ->
     response.reply "Access allowed? " + JSON.stringify allowed

@@ -76,8 +76,22 @@ module.exports = (robot) ->
   RBAC.addPermissionCheck = (cb) ->
     permissionChecks.push cb
 
+  # Default method is to test each permission in isolation and return when
+  # any is allowed
+  RBAC.checkPermissions = (response, permissions, cb) ->
+    async.some(
+      permissions
+      (permission, cb) ->
+        isUserAuthorized(
+          # TODO Probably want the full user object here
+          response.message.user.id, permission, response, cb
+        )
+      cb
+    )
+
+  # Test all permissionChecks to see if this user is allowed this permission
   # TODO Probably want the full user object here
-  RBAC.isUserAuthorized = (user, permission, response, cb) ->
+  isUserAuthorized = (user, permission, response, cb) ->
     if permissionChecks.length > 0
       # note that these execute in parallel
       async.every(
