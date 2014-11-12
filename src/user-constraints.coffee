@@ -43,6 +43,16 @@ module.exports = (robot) ->
       response.reply "No constraints on permission (#{permission})"
       cb true
 
-  RBAC.addPermissionCheck userMeetsConstraints
+  RBAC.addPermissionCheck (user, permissions, response, cb) ->
+    done = (permissions) ->
+      if permissions.length == 0
+        response.reply "User does not meet the necessary constraints"
+      cb permissions
+    async.filter(
+      permissions
+      (permission, cb) -> userMeetsConstraints user, permission, response, cb
+      done
+    )
+
 
   return UserConstraints

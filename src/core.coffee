@@ -76,33 +76,37 @@ module.exports = (robot) ->
   RBAC.addPermissionCheck = (cb) ->
     permissionChecks.push cb
 
-  # Default method is to test each permission in isolation and return when
-  # any is allowed
+  # TODO documentation
+  # permissions - list of permissions to check
+  # cb(accessIsAllowed) - callback with the final access decision
   RBAC.checkPermissions = (response, permissions, cb) ->
-    async.some(
-      permissions
-      (permission, cb) ->
-        isUserAuthorized(
-          # TODO Probably want the full user object here
-          response.message.user.id, permission, response, cb
-        )
-      cb
-    )
-
-  # Test all permissionChecks to see if this user is allowed this permission
-  # TODO Probably want the full user object here
-  isUserAuthorized = (user, permission, response, cb) ->
     if permissionChecks.length > 0
-      # note that these execute in parallel
-      async.every(
+      # Execute each permissionCheck in definition order and gradually reduce the list of allowed permissions
+      async.reduce(
         permissionChecks
-        (fn, cb) -> fn.call(undefined, user, permission, response, cb)
-        cb
+        permissions
+        (permissions, permissionCheck, cb) ->
+          # Stop executing checks when there are no more permissions left
+          permissionCheckComplete = (permissions) ->
+            if permissions.length > 0
+              cb null, permissions
+            else
+              cb new Error(), []
+          # Execute a single permissionCheck
+          permissionCheck.call(
+            undefined
+            response.message.user
+            permissions
+            response
+            permissionCheckComplete
+          )
+        # Access is allowed if at least one Permission passed all checks
+        (err, result) -> cb (result.length > 0)
       )
     else
       defaultPolicy = RBAC.allowUnknown
       defaultPolicyWord = if defaultPolicy then 'allow' else 'deny'
-      response.reply("No auth policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
+      response.reply("No authorization policy defined! Falling back to default state for all commands (#{defaultPolicyWord}).")
       cb defaultPolicy
 
   # Default to the more secure option

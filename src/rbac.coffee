@@ -14,8 +14,6 @@
 # Author:
 #   Michael Ansel <mansel@box.com>
 
-async = require 'async'
-
 module.exports = (robot) ->
   RBAC = require('./core')(robot)
 
